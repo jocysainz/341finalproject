@@ -27,7 +27,9 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
-  (req, res) => res.redirect('/auth/profile')
+  (req, res) => {
+    res.redirect('/auth/profile');
+  }
 );
 
 /**
@@ -39,11 +41,19 @@ router.get(
  *     responses:
  *       200:
  *         description: User profile
+ *         content:
+ *           application/json:
+ *             example:
+ *               googleId: "1234567890"
+ *               displayName: "Jocy Sainz"
+ *               email: "notjocygs@gmail.com"
  *       401:
  *         description: Not logged in
  */
 router.get('/profile', (req, res) => {
-  if (!req.user) return res.status(401).json({ message: 'Not logged in' });
+  if (!req.user) {
+    return res.status(401).json({ message: 'Not logged in' });
+  }
   res.json(req.user);
 });
 
@@ -56,9 +66,15 @@ router.get('/profile', (req, res) => {
  *     responses:
  *       200:
  *         description: Logged out successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Logged out"
  */
 router.get('/logout', (req, res) => {
-  req.logout(() => res.json({ message: 'Logged out' }));
+  req.logout(() => {
+    res.json({ message: 'Logged out' });
+  });
 });
 
 module.exports = router;
