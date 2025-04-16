@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const reminderController = require('../controllers/reminderController');
-const { ensureAuth } = require('../middleware/authMiddleware');
+const isAuthenticated = require('../middleware/authMiddleware');
 
 /**
  * @swagger
@@ -11,17 +11,32 @@ const { ensureAuth } = require('../middleware/authMiddleware');
  *     responses:
  *       200:
  *         description: List of reminders
- *         content:
- *           application/json:
- *             example:
- *               - _id: "66201a1dfbbf28771dc12345"
- *                 note: "Doctor appointment"
- *                 reminderDate: "2025-04-18T10:00:00.000Z"
- *                 user: "661fc5a0ab12345678abc123"
  *       401:
- *         description: Unauthorized
+ *         description: Not logged in
  */
-router.get('/', ensureAuth, reminderController.getAllReminders);
+router.get('/', isAuthenticated, reminderController.getAllReminders);
+
+/**
+ * @swagger
+ * /api/reminders/{id}:
+ *   get:
+ *     summary: Get a reminder by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Reminder ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Reminder found
+ *       401:
+ *         description: Not logged in
+ *       404:
+ *         description: Reminder not found
+ */
+router.get('/:id', isAuthenticated, reminderController.getReminderById);
 
 /**
  * @swagger
@@ -35,56 +50,26 @@ router.get('/', ensureAuth, reminderController.getAllReminders);
  *           schema:
  *             type: object
  *             required:
- *               - note
+ *               - taskId
  *               - reminderDate
+ *               - note
  *             properties:
- *               note:
+ *               taskId:
  *                 type: string
- *                 example: "Finish final project"
  *               reminderDate:
  *                 type: string
- *                 format: date-time
- *                 example: "2025-04-19T15:00:00.000Z"
+ *                 format: date
+ *               note:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Reminder created
- *         content:
- *           application/json:
- *             example:
- *               _id: "66201a2afbbf28771dc67890"
- *               note: "Finish final project"
- *               reminderDate: "2025-04-19T15:00:00.000Z"
- *               user: "661fc5a0ab12345678abc123"
  *       400:
- *         description: Bad Request
+ *         description: Missing or invalid fields
+ *       401:
+ *         description: Not logged in
  */
-router.post('/', ensureAuth, reminderController.createReminder);
-
-/**
- * @swagger
- * /api/reminders/{id}:
- *   get:
- *     summary: Get a reminder by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: A reminder object
- *         content:
- *           application/json:
- *             example:
- *               _id: "66201a2afbbf28771dc67890"
- *               note: "Finish final project"
- *               reminderDate: "2025-04-19T15:00:00.000Z"
- *               user: "661fc5a0ab12345678abc123"
- *       404:
- *         description: Reminder not found
- */
-router.get('/:id', ensureAuth, reminderController.getReminderById);
+router.post('/', isAuthenticated, reminderController.createReminder);
 
 /**
  * @swagger
@@ -97,6 +82,7 @@ router.get('/:id', ensureAuth, reminderController.getReminderById);
  *         required: true
  *         schema:
  *           type: string
+ *         description: Reminder ID
  *     requestBody:
  *       required: true
  *       content:
@@ -104,18 +90,20 @@ router.get('/:id', ensureAuth, reminderController.getReminderById);
  *           schema:
  *             type: object
  *             properties:
- *               note:
- *                 type: string
  *               reminderDate:
  *                 type: string
- *                 format: date-time
+ *                 format: date
+ *               note:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Reminder updated
+ *       401:
+ *         description: Not logged in
  *       404:
  *         description: Reminder not found
  */
-router.put('/:id', ensureAuth, reminderController.updateReminder);
+router.put('/:id', isAuthenticated, reminderController.updateReminder);
 
 /**
  * @swagger
@@ -128,12 +116,15 @@ router.put('/:id', ensureAuth, reminderController.updateReminder);
  *         required: true
  *         schema:
  *           type: string
+ *         description: Reminder ID
  *     responses:
  *       200:
  *         description: Reminder deleted
+ *       401:
+ *         description: Not logged in
  *       404:
  *         description: Reminder not found
  */
-router.delete('/:id', ensureAuth, reminderController.deleteReminder);
+router.delete('/:id', isAuthenticated, reminderController.deleteReminder);
 
 module.exports = router;
